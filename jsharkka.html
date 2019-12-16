@@ -84,7 +84,21 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 	}
 }
 
+function PaymentsBody(props) { 									//funktio taulukon sisällölle
+	const rows = props.paymentData.map((row) => {
+		return (
+			<tr key={row.id}>
+				<td>{row.to}</td> 								//Laskuttaja
+				<td>{row.date}</td> 							//Päivämäärä
+				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td> //Loppusumma
+				<td>{row.from}</td> 							//Maksaja
+				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td> //nappi rivin poistoon
+			</tr>
+		);
+	});
 
+	return <tbody>{rows}</tbody>;
+}
 
 
 
