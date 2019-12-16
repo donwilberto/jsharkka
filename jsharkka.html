@@ -20,11 +20,70 @@
 
 <script type="text/babel">
 
+const INIT_PAYMENT_DATA = true;
 
+class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = this.initState();
+		this.addPayment = this.addPayment.bind(this);
+		this.removePayment = this.removePayment.bind(this);
+	}
 
+	initState() { 																				//sovelluksen alustus
+		let state = {paymentData: []};
+		if (INIT_PAYMENT_DATA) {
+			const PAYMENT_COUNT = 10;
+			const FROM_COUNT = 2;
+			const TO_COUNT = 10;
+			const SUM_MIN = 10;
+			const SUM_MAX = 50;
+			for (let i = 0; i < PAYMENT_COUNT; i++) { 											//for-loopilla lisätään randomisti generoituja maksuja kymmenen kappaletta
+				let payment_from = `Henkilö ${String.fromCharCode(Math.floor(Math.random() * FROM_COUNT) + 65)}`; 
+				let payment_to = `Yritys ${String.fromCharCode(Math.floor(Math.random() * TO_COUNT) + 65)}`;
+				let payment_date = "dd.mm.yyyy";
+				let payment_sum = parseFloat((Math.random() * (SUM_MAX - SUM_MIN) + SUM_MIN).toFixed(2));
+				state.paymentData.push({from: payment_from, to: payment_to, date: payment_date, sum: payment_sum, id: i});
+			}
+		}
 
+		return state;
+	}
 
+	addPayment(newPayment) { 																	//lisätään maksu listaan
+		this.setState({paymentData: [...this.state.paymentData, newPayment]});
+	}
 
+	removePayment(id) { 																		//poistetaan maksu listasta
+		this.setState({
+			paymentData: this.state.paymentData.filter((payment) => {
+				return payment.id != id;
+			})
+		});
+	}
+
+	render() { 																					//näyttää koodin ulostulon
+		return (
+			<div>
+				<PaymentInput addPayment={this.addPayment} />
+				<PaymentSummary paymentData={this.state.paymentData} />
+				{this.state.paymentData.length > 0 &&
+					<table className="table">
+					<colgroup>
+						<col id="columnTo" />
+						<col id="columnDate" />
+						<col id="columnSum" />
+						<col id="columnFrom" />
+						<col id="columnControls" />
+					</colgroup>
+					<PaymentsHead />
+					<PaymentsBody paymentData={this.state.paymentData} removePayment={this.removePayment} />
+					</table>
+				}
+			</div>
+		);
+	}
+}
 
 class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun syötettävän tiedon kentät
 	constructor(props) {
