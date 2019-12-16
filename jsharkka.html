@@ -143,6 +143,45 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 	}
 }
 
+function PaymentSummary(props) {								//funktio, joka laskee maksujen summan
+	let sums = {};
+	props.paymentData.forEach(function(payment) {
+		if (payment.from in sums) {
+			sums[payment.from] += payment.sum;
+		} else {
+			sums[payment.from] = payment.sum;
+		}
+	});
+	let names = Object.keys(sums);
+	if (names.length < 2) {
+		return null;
+	} else if (names.length > 2) {
+		return ( 												//virheenkäsittely jos on enemmän maksjia
+			<div className="alert alert-warning">
+			<h1>Maksajia on useampi kuin kaksi.</h1>
+			</div>
+		);
+	} else {
+		let diffCurrency, diffValue, summary;
+		diffValue = sums[names[0]] - sums[names[1]];
+		if (diffValue < 0) {
+			diffValue = -diffValue;
+			diffCurrency = diffValue.toLocaleString("fi-FI", {style: "currency", currency: "EUR"});
+			summary = `${names[0]} maksaa ${diffCurrency}.`;
+		} else if (diffValue > 0) {
+			diffCurrency = diffValue.toLocaleString("fi-FI", {style: "currency", currency: "EUR"});
+			summary = `${names[1]} maksaa ${diffCurrency}.`;
+		} else {
+			summary = "Laskut menivät tasan.";
+		}
+		return ( 												//palauttaa tekstin joka on summan lopputulos
+			<div className="alert alert-dark">
+			<h1>{summary}</h1>
+			</div>
+		);
+	}
+}
+
 function PaymentsBody(props) { 									//funktio taulukon sisällölle
 	const rows = props.paymentData.map((row) => {
 		return (
