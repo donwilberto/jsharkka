@@ -182,23 +182,21 @@ function PaymentSummary(props) {								//funktio, joka laskee maksujen summan
 	}
 }
 
-function PaymentsBody(props) { 									//funktio taulukon sisällölle
+                                                                //funktio taulukon sisällölle
+function PaymentsBody(props) { 									
 	const rows = props.paymentData.map((row) => {
 		return (
 			<tr key={row.id}>
-				<td>{row.to}</td> 								//Laskuttaja
-				<td>{row.date}</td> 							//Päivämäärä
-				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td> //Loppusumma
-				<td>{row.from}</td> 							//Maksaja
-				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td> //nappi rivin poistoon
+				<td>{row.to}</td> 								
+				<td>{row.date}</td> 							
+				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td> 
+				<td>{row.from}</td> 							
+				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td> 
 			</tr>
 		);
 	});
-
 	return <tbody>{rows}</tbody>;
 }
-
-
 function PaymentsHead(props) { 									//funktio otsikkoriville
 	return (
 		<thead className="thead-dark">
@@ -212,7 +210,6 @@ function PaymentsHead(props) { 									//funktio otsikkoriville
 		</thead>
 	);
 }
-
 ReactDOM.render(<App />, document.getElementById("root"));
 
 
