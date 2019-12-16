@@ -101,7 +101,21 @@ function PaymentsBody(props) { 									//funktio taulukon sisällölle
 }
 
 
+function PaymentsHead(props) { 									//funktio otsikkoriville
+	return (
+		<thead className="thead-dark">
+			<tr>
+				<th scope="col">Laskuttaja</th>
+				<th scope="col">Maksupäivämäärä</th>
+				<th scope="col">Loppusumma</th>
+				<th scope="col">Maksaja</th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+	);
+}
 
+ReactDOM.render(<App />, document.getElementById("root"));
 
 
 
