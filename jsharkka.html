@@ -39,7 +39,7 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 		this.setState({[event.target.name]: event.target.value});
 	}
 
-	handleSubmit(event) { 								//käsittelee "lisää"-napilla syötetyt tiedot 
+	handleSubmit(event) { 					//käsittelee "lisää"-napilla syötetyt tiedot 
 		if (this.isValidPayment()) {
 			this.state.from = this.state.from.trim();
 			this.state.to = this.state.to.trim();
@@ -53,23 +53,23 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 		event.preventDefault();
 	}
 
-	isValidPayment() { 									//tarkistetaan, että syöttökentissä on oikeamuotoiset arvot
+	isValidPayment() { 					//tarkistetaan, että syöttökentissä on oikeamuotoiset arvot
 		return this.isValidName(this.state.from) && this.isValidName(this.state.to) && this.isValidDate(this.state.date) && this.isValidSum(this.state.sum);
 	}
 
-	isValidDate(date) { 								//tarkistaa päivämäärän
+	isValidDate(date) { 					//tarkistaa päivämäärän
 		return date.trim() !== "";
 	}
 
-	isValidName(name) { 								//tarkistaa nimen
+	isValidName(name) { 					//tarkistaa nimen
 		return name.trim() !== "";
 	}
 
-	isValidSum(sum) { 									//tarkistaa summan
+	isValidSum(sum) { 					//tarkistaa summan
 		return !isNaN(parseFloat(sum.replace(",", ".")));
 	}
 
-	render() { 											//syötekentät
+	render() { 						//syötekentät
 		return (
 			<form className="mt-3" onSubmit={this.handleSubmit}>
 				<div className="form-row align-items-end">
