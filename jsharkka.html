@@ -5,7 +5,7 @@
 <title>R3 DEMO</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="jsharkka.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
@@ -39,7 +39,7 @@ class App extends React.Component {
 			const SUM_MIN = 10;
 			const SUM_MAX = 50;
 			for (let i = 0; i < PAYMENT_COUNT; i++) { 											//for-loopilla lisätään randomisti generoituja maksuja kymmenen kappaletta
-				let payment_from = `Henkilö ${String.fromCharCode(Math.floor(Math.random() * FROM_COUNT) + 65)}`; 
+				let payment_from = `Henkilö ${String.fromCharCode(Math.floor(Math.random() * FROM_COUNT) + 65)}`;
 				let payment_to = `Yritys ${String.fromCharCode(Math.floor(Math.random() * TO_COUNT) + 65)}`;
 				let payment_date = "dd.mm.yyyy";
 				let payment_sum = parseFloat((Math.random() * (SUM_MAX - SUM_MIN) + SUM_MIN).toFixed(2));
@@ -94,11 +94,11 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
-	handleChange(event) { 
+	handleChange(event) {
 		this.setState({[event.target.name]: event.target.value});
 	}
 
-	handleSubmit(event) { 					//käsittelee "lisää"-napilla syötetyt tiedot 
+	handleSubmit(event) { 					//käsittelee "lisää"-napilla syötetyt tiedot
 		if (this.isValidPayment()) {
 			this.state.from = this.state.from.trim();
 			this.state.to = this.state.to.trim();
@@ -183,15 +183,15 @@ function PaymentSummary(props) {								//funktio, joka laskee maksujen summan
 }
 
                                                                 //funktio taulukon sisällölle
-function PaymentsBody(props) { 									
+function PaymentsBody(props) {
 	const rows = props.paymentData.map((row) => {
 		return (
 			<tr key={row.id}>
-				<td>{row.to}</td> 								
-				<td>{row.date}</td> 							
-				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td> 
-				<td>{row.from}</td> 							
-				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td> 
+				<td>{row.to}</td>
+				<td>{row.date}</td>
+				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td>
+				<td>{row.from}</td>
+				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td>
 			</tr>
 		);
 	});
