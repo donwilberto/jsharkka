@@ -6,6 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link rel="stylesheet" href="jsharkka.css">
+<link rel="stylesheet" href="css/all.css">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
@@ -26,12 +27,15 @@ class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = this.initState();
+		this.isWithoutPayments = this.isWithoutPayments.bind(this);
 		this.addPayment = this.addPayment.bind(this);
+		this.modifyPayment = this.modifyPayment.bind(this);
 		this.removePayment = this.removePayment.bind(this);
+		this.resetPayments = this.resetPayments.bind(this);
 	}
 
 	initState() { 																				//sovelluksen alustus
-		let state = {paymentData: []};
+		let state = {inputData: {date: "", from: "", to: "", sum: "", id: Date.now()}, paymentData: []};
 		if (INIT_PAYMENT_DATA) {
 			const PAYMENT_COUNT = 10;
 			const FROM_COUNT = 2;
@@ -39,10 +43,10 @@ class App extends React.Component {
 			const SUM_MIN = 10;
 			const SUM_MAX = 50;
 			for (let i = 0; i < PAYMENT_COUNT; i++) { 											//for-loopilla lisätään randomisti generoituja maksuja kymmenen kappaletta
-				let payment_from = `Henkilö ${String.fromCharCode(Math.floor(Math.random() * FROM_COUNT) + 65)}`;
+				let payment_from = `Henkilö ${String.fromCharCode(Math.floor(Math.random() * FROM_COUNT) + 65)}`; 
 				let payment_to = `Yritys ${String.fromCharCode(Math.floor(Math.random() * TO_COUNT) + 65)}`;
 				let payment_date = "dd.mm.yyyy";
-				let payment_sum = parseFloat((Math.random() * (SUM_MAX - SUM_MIN) + SUM_MIN).toFixed(2));
+				let payment_sum = (Math.random() * (SUM_MAX - SUM_MIN) + SUM_MIN).toFixed(2).replace(".", ",");
 				state.paymentData.push({from: payment_from, to: payment_to, date: payment_date, sum: payment_sum, id: i});
 			}
 		}
@@ -50,8 +54,40 @@ class App extends React.Component {
 		return state;
 	}
 
+	isWithoutPayments() {
+		return this.state.paymentData.length === 0;
+	}
+
 	addPayment(newPayment) { 																	//lisätään maksu listaan
-		this.setState({paymentData: [...this.state.paymentData, newPayment]});
+		const newInputData = {date: "", from: "", to: "", sum: "", id: Date.now()};
+		let oldPayment = false;
+		for (const payment of this.state.paymentData) {
+			if (payment.id === newPayment.id) {
+				oldPayment = true;
+				break;
+			}
+		}
+		if (oldPayment) {
+			const newPaymentData = this.state.paymentData.map((payment) => {
+				if (payment.id === newPayment.id) {
+					return newPayment;
+				} else {
+					return payment;
+				}
+			});
+			this.setState({inputData: newInputData, paymentData: newPaymentData});
+		} else {
+			this.setState({inputData: newInputData, paymentData: [...this.state.paymentData, newPayment]});
+		}
+	}
+
+	modifyPayment(id) {																			//muokataan maksua
+		for (const payment of this.state.paymentData) {
+			if (payment.id === id) {
+				this.setState({inputData: payment});
+				break;
+			}
+		}
 	}
 
 	removePayment(id) { 																		//poistetaan maksu listasta
@@ -62,22 +98,27 @@ class App extends React.Component {
 		});
 	}
 
+	resetPayments() {																			//tyhjentää taulukon
+		this.setState({paymentData: []});
+	}
+
 	render() { 																					//näyttää koodin ulostulon
 		return (
 			<div>
-				<PaymentInput addPayment={this.addPayment} />
+				<PaymentInput isWithoutPayments={this.isWithoutPayments} addPayment={this.addPayment} inputData={this.state.inputData} key={this.state.inputData.id} />
+				<ResetModal resetPayments={this.resetPayments} />
 				<PaymentSummary paymentData={this.state.paymentData} />
 				{this.state.paymentData.length > 0 &&
 					<table className="table">
 					<colgroup>
-						<col id="columnTo" />
 						<col id="columnDate" />
-						<col id="columnSum" />
 						<col id="columnFrom" />
+						<col id="columnTo" />
+						<col id="columnSum" />
 						<col id="columnControls" />
 					</colgroup>
 					<PaymentsHead />
-					<PaymentsBody paymentData={this.state.paymentData} removePayment={this.removePayment} />
+					<PaymentsBody paymentData={this.state.paymentData} modifyPayment={this.modifyPayment} removePayment={this.removePayment} />
 					</table>
 				}
 			</div>
@@ -88,26 +129,22 @@ class App extends React.Component {
 class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun syötettävän tiedon kentät
 	constructor(props) {
 		super(props);
-		this.emptyState = {from: "", to: "", date: "", sum: "", id: ""};
-		this.state = this.emptyState;
+		this.state = props.inputData;
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
-	handleChange(event) {
+	handleChange(event) { 
 		this.setState({[event.target.name]: event.target.value});
 	}
 
-	handleSubmit(event) { 					//käsittelee "lisää"-napilla syötetyt tiedot
+	handleSubmit(event) { 					//käsittelee "lisää"-napilla syötetyt tiedot 
 		if (this.isValidPayment()) {
 			this.state.from = this.state.from.trim();
 			this.state.to = this.state.to.trim();
 			this.state.date = this.state.date.trim();
-			this.state.sum = parseFloat(this.state.sum.replace(",", "."));
-			this.state.id = Date.now();
-
+			this.state.sum = this.state.sum.replace(",", ".");
 			this.props.addPayment(this.state);
-			this.setState(this.emptyState);
 		}
 		event.preventDefault();
 	}
@@ -132,11 +169,12 @@ class PaymentInput extends React.Component { 			//luokka, jossa luodaan maksun s
 		return (
 			<form className="mt-3" onSubmit={this.handleSubmit}>
 				<div className="form-row align-items-end">
-					<div className="form-group col-lg-4"><label className="col-form-label" htmlFor="inputTo">Laskuttava yritys</label><input type="text" name="to" value={this.state.to} className="form-control" id="inputTo" onChange={this.handleChange} /></div>
 					<div className="form-group col-lg-2"><label className="col-form-label" htmlFor="inputDate">Maksupäivämäärä</label><input type="text" name="date" value={this.state.date} className="form-control" id="inputDate" onChange={this.handleChange} /></div>
-					<div className="form-group col-lg-1"><label className="col-form-label" htmlFor="inputSum">Summa</label><input type="text" name="sum" value={this.state.sum} className="form-control" id="inputSum" onChange={this.handleChange} /></div>
-					<div className="form-group col-lg-4"><label className="col-form-label" htmlFor="inputFrom">Laskun maksaja</label><input type="text" name="from" value={this.state.from} className="form-control" id="inputFrom" onChange={this.handleChange} /></div>
-					<div className="form-group col-lg-1">{this.isValidPayment() && <button type="submit" className="btn btn-primary btn-block">Lisää</button>}</div>
+					<div className="form-group col-lg-3"><label className="col-form-label" htmlFor="inputFrom">Laskun maksaja</label><input type="text" name="from" value={this.state.from} className="form-control" id="inputFrom" onChange={this.handleChange} /></div>
+					<div className="form-group col-lg-3"><label className="col-form-label" htmlFor="inputTo">Laskuttava yritys</label><input type="text" name="to" value={this.state.to} className="form-control" id="inputTo" onChange={this.handleChange} /></div>
+					<div className="form-group col-lg-2"><label className="col-form-label" htmlFor="inputSum">Loppusumma</label><input type="text" name="sum" value={this.state.sum} className="form-control" id="inputSum" onChange={this.handleChange} /></div>
+					<div className="form-group col-lg-1">{this.isValidPayment() && this.state.id === null && <button type="submit" className="btn btn-primary btn-block">Lisää</button> || this.isValidPayment() && this.state.id !== null && <button type="submit" className="btn btn-primary btn-block">Tallenna</button>}</div>
+					<div className="form-group col-lg-1">{!this.props.isWithoutPayments() && <button type="button" className="btn btn-secondary btn-block" data-toggle="modal" data-target="#staticBackdrop">Tyhjennä</button>}</div>
 				</div>
 			</form>
 		);
@@ -147,9 +185,9 @@ function PaymentSummary(props) {								//funktio, joka laskee maksujen summan
 	let sums = {};
 	props.paymentData.forEach(function(payment) {
 		if (payment.from in sums) {
-			sums[payment.from] += payment.sum;
+			sums[payment.from] += parseFloat(payment.sum.replace(",", "."));
 		} else {
-			sums[payment.from] = payment.sum;
+			sums[payment.from] = parseFloat(payment.sum.replace(",", "."));
 		}
 	});
 	let names = Object.keys(sums);
@@ -183,33 +221,56 @@ function PaymentSummary(props) {								//funktio, joka laskee maksujen summan
 }
 
                                                                 //funktio taulukon sisällölle
-function PaymentsBody(props) {
+function PaymentsBody(props) { 									
 	const rows = props.paymentData.map((row) => {
 		return (
 			<tr key={row.id}>
-				<td>{row.to}</td>
-				<td>{row.date}</td>
-				<td className="cellSum">{row.sum.toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td>
-				<td>{row.from}</td>
-				<td><button className="btn btn-outline-danger btn-sm" onClick={props.removePayment.bind(null,row.id)}>Poista</button></td>
+				<td>{row.date}</td> 							
+				<td>{row.from}</td> 							
+				<td>{row.to}</td> 								
+				<td className="cellSum">{parseFloat(row.sum.replace(",", ".")).toLocaleString("fi-FI", {style: "currency", currency: "EUR"})}</td>
+				<td><span><button className="btn btn-danger btn-sm float-right p-1" onClick={props.removePayment.bind(null,row.id)}>Poista</button><button className="btn btn-dark btn-sm float-right mr-1 p-1" onClick={props.modifyPayment.bind(null,row.id)}>Muokkaa</button></span></td> 
 			</tr>
 		);
 	});
 	return <tbody>{rows}</tbody>;
 }
+
 function PaymentsHead(props) { 									//funktio otsikkoriville
 	return (
 		<thead className="thead-dark">
 			<tr>
-				<th scope="col">Laskuttaja</th>
 				<th scope="col">Maksupäivämäärä</th>
-				<th scope="col">Loppusumma</th>
-				<th scope="col">Maksaja</th>
+				<th scope="col">Laskun maksaja</th>
+				<th scope="col">Laskuttava yritys</th>
+				<th scope="col" className="cellSum">Loppusumma</th>
 				<th scope="col"></th>
 			</tr>
 		</thead>
 	);
 }
+
+// vahvistus käyttäjältä taulukon tyhjennykselle
+function ResetModal(props) {
+	return (
+		<div className="modal fade" id="staticBackdrop" data-backdrop="static" tabIndex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div className="modal-dialog" role="document">
+				<div className="modal-content">
+					<div className="modal-header">
+						<h5 className="modal-title" id="staticBackdropLabel">Taulukon tyhjennys</h5>
+						<button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					</div>
+					<div className="modal-body">Oletko varma, että haluat tyhjentää taulukon?</div>
+					<div className="modal-footer">
+						<button type="button" className="btn btn-primary" data-dismiss="modal" onClick={props.resetPayments.bind()}>OK</button>
+						<button type="button" className="btn btn-secondary" data-dismiss="modal">Peruuta</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 ReactDOM.render(<App />, document.getElementById("root"));
 
 
